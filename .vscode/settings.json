@@ -4,6 +4,13 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "ranges": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "string": "cpp",
+        "algorithm": "cpp",
+        "map": "cpp",
+        "iostream": "cpp",
+        "xtree": "cpp"
     }
 }

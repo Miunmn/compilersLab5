@@ -1,5 +1,3 @@
-#pragma once
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -32,14 +30,14 @@ class Gramatica{
         vector<string> factor = {"(", "exp", ")"};
         vector<string> factor2 = {"numero"};
 
-        map<string, vector<vector<string>> gramatica;
+        std::map<string, vector<vector<string>*> gramatica;
 
         int estados = 11;
 
     public:
         Gramatica(){
             vector<vector<string>> temp1 = {exp};
-            vector<vector<string>> temp2 = {exp_,exp2};
+            vector<vector<string>> temp2 = {exp_,exp_2};
             vector<vector<string>> temp3 = {opsuma, opsuma2};
             vector<vector<string>> temp4 = {term};
             vector<vector<string>> temp5 = {term_,term_2};
@@ -54,6 +52,28 @@ class Gramatica{
             gramatica.insert(pair<string, vector<vector<string>> >("opmult", vector<vector<string>> = {temp6}));
             gramatica.insert(pair<string, vector<vector<string>> >("factor", vector<vector<string>> = {temp7}));
         }
+
+        void agregarelementosaPrimero(vector<string> &cjtPrimero, vector<string> valores){
+            for(int i = 0 ; i < valores.size() ; i++){
+                if (find(cjtPrimero.begin(), cjtPrimero.end(), valores[i]) != cjtPrimero.end())
+                    cjtPrimero.push_back(valores[i]);
+            }
+        }
+
+        bool esTerminal(string value){
+            if (find(TERMINALES.begin(), TERMINALES.end(), value) != TERMINALES.end()){
+                return true;
+            }
+            return false;
+        }
+
+        bool esNoTerminal(string value){
+            if (find(NO_TERMINALES.begin(), NO_TERMINALES.end(), value) != NO_TERMINALES.end()){
+                return true;
+            }
+            return false;
+        }
+
 
         map<string,vector<string>> conjuntos_primeros(){
             if (find (TERMINALES.begin(), TERMINALES.end(), "epsilon") != TERMINALES.end())
@@ -83,12 +103,12 @@ class Gramatica{
 
         map<string,vector<string>> conjuntos_primeros_sinep(){
             map<string, vector<string>> primeros;
-            /*
+            
             for(int i = 0; i < NO_TERMINALES.size(); i++){
                 vector<string> terminales_primeros;
                 primeros.insert(pair<string, vector<string> >(NO_TERMINALES[i], terminales_primeros));
             }
-            */
+
             for(int i = 0; i < NO_TERMINALES.size(); i++){
                 vector<string> terminales_primeros;
                 bool existen_cambios = true;
@@ -97,8 +117,21 @@ class Gramatica{
                     vector<vector<string>> producciones = gramatica.find(NO_TERMINALES[i])->second; 
                     int cant_producciones = producciones.size();
                     for(int i = 0 ; i < cant_producciones ; i++){
-                        for(int j = 0 ; producciones[i].size(); j++)){
-                            
+                        for(int j = 0 ; j < producciones[i].size(); j++){
+                            vector<string> primerosA =  primeros.find(NO_TERMINALES[i])->second; 
+                            int cantA = primerosA.size();
+                            if (esTerminal(producciones[i][j])){
+                                vector<string> primerosdenoterminales = primeros.find(producciones[i][j])->second;
+                                if (primerosdenoterminales.empty()) continue;
+                                else{
+                                    agregarelementosaPrimero(primerosA,primerosdenoterminales);
+                                }
+                            }
+                            else{
+                                vector<string> primeroTerminal = {producciones[i][j]};
+                                agregarelementosaPrimero(primerosA, primeroTerminal);
+                            }
+                            if (cantA != primerosA.size()) {existen_cambios = true;}
                         }
                     }        
                 }            
@@ -113,4 +146,3 @@ class Gramatica{
         }
 
 };
-
