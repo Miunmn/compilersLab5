@@ -30,7 +30,7 @@ class Gramatica{
         vector<string> factor = {"(", "exp", ")"};
         vector<string> factor2 = {"numero"};
 
-        std::map<string, vector<vector<string>*> gramatica;
+        std::map<string, vector<vector<string>*>> gramatica;
 
         int estados = 11;
 
@@ -90,13 +90,30 @@ class Gramatica{
 
             bool existen_cambios = true;
             while(existen_cambios){
-                map<string, vector<string>>::iterator it;
+                map<string, vector<vector<string>*>>::iterator it;
                 int k;
                 bool continuar;
                 for(it = primeros.begin(); it != primeros.end(); ++it){
-                    k = 1;
+                    k = 0;
                     continuar = true;
-                    while(continuar && )
+                    while(continuar && k <= it->second.size()){
+                        if(it->second.size() > 2){
+                            for(int i = 0; i < it->second.size(); i++){
+                                if(esTerminal(it->second[i][k]))
+                            }
+                        } else{
+                            if(esTerminal(it->second[k]) && it->second[k] != "epsilon"){
+                                primeros[it->first].push_back(it->second[k]);
+                            } else if(esNoTerminal(it->second[k])){
+                                if(primeros[it->second[k]].size() > 0){
+                                    for(int i = 0; i < primeros[it->second[k]].size(); i++){
+                                        if(!find(primeros[it->first].begin(), primeros[it->first].end(), primeros[it->second[k]][i]) && primeros[it->second[k]][i] != "epsilon")
+                                            primeros[it->first].push_back(primeros[it->second[k]][i]);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
