@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "/Users/alejandrotero/Documents/UTEC/Ciclo7/Compiladores/Labs/Lab5/compilersLab5/src",
+      "environment": [],
+      "program": "/Users/alejandrotero/Documents/UTEC/Ciclo7/Compiladores/Labs/Lab5/compilersLab5/src/build/Debug/outDebug",
+      "internalConsoleOptions": "openOnSessionStart",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "externalConsole": false
+    }
+  ]
+}
