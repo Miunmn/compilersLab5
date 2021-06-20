@@ -46,14 +46,15 @@ public:
         conjuntoprimero.insert(make_pair("opmult", vec));
         conjuntoprimero.insert(make_pair("factor", vec));
 
-
     }
     void agregarelementosaPrimero(vector<string> &cjtPrimero, vector<string> valores)
     {
         for (int i = 0; i < valores.size(); i++)
         {
             if (find(cjtPrimero.begin(), cjtPrimero.end(), valores[i]) != cjtPrimero.end())
-                cjtPrimero.push_back(valores[i]);
+                {
+                    cout<<"ADDED"<<endl;
+                    cjtPrimero.push_back(valores[i]);}
         }
     }
 
@@ -91,40 +92,57 @@ public:
     {
         for(auto it = gramatica.begin(); it != gramatica.end(); it++)
         {
-            cout<<it->first<<endl;
+            cout<<it->first<<"-->";
             bool cambios = true;
             while(cambios)
             {
-                cambios = false;
-                vector<string> vector_ = it->second;
-                int vector_size = vector_.size();
+                vector<string> vector_ = conjuntoprimero.find(it->first)->second;
+                int vector_size = vector_.size(); //vector de  elementos en el conjunto primero de it->first
+                vector<string> producciones = it->second; // cant de elementos  del vector de la lina 100
 
-                for(int i = 0 ; i < vector_.size() ; i++ )
+                for(int i = 0 ; i < producciones.size() ; i++ )
                 {
                     string x1 = "";
-                    size_t pos = it->second[0].find(" ");
-                    if(pos < it->second[0].size())
-                        x1 = it->second[0].substr(0, pos);
-                    else x1 = it->second[0];
-
+                    int pos = producciones[i].find(" ");
+                    cout<<"pos: "<<pos<<endl;
+                    if(pos!=string::npos){
+                        x1 = producciones[i].substr(0, pos);
+                    }
+                    else {
+                        x1 = producciones[i];
+                    }
+                    cout<<"x1: "<<x1<<endl;
                     vector<string> toadd;
-                    if (esTerminal(x1)){
+                    if (esNoTerminal(x1)){
+                        cout<<"no esterminal"<<"\n";
                         toadd = conjuntoprimero.find(x1)->second;
                     }else{
-                        toadd = {x1};
-                    }        
-
-                    //vector<string> vec = conjuntoprimero.find(it->first)->second;
-                    agregarelementosaPrimero(conjuntoprimero.find(it->first)->second,conjuntoprimero.find(x1)->second);
+                        cout<<"es terminal "<<x1<<"\n";
+                        toadd.push_back(x1);
+                    }    
+                    auto aux1 = conjuntoprimero.find(it->first)->second;
+                    agregarelementosaPrimero(aux1,toadd);
+                    conjuntoprimero.find(it->first)->second = aux1;
                 }
-
-                if(vector_size!=conjuntoprimero.find(it->first)->second.size())
-                    cambios = true;
+                //exit(0);
+                if(vector_size == (conjuntoprimero.find(it->first)->second).size())
+                    cambios = false;
                 
+                cout<<"vector_size: "<<vector_size<<"  (conjuntoprimero.find(it->first)->second).size(): "<< (conjuntoprimero.find(it->first)->second).size()<<"\n";
             }
 
         }
+        printconjuntosprimeros();
+    }
 
+    void printconjuntosprimeros(){
+        for (auto it = conjuntoprimero.begin() ; it!=conjuntoprimero.end(); it++){
+            cout<<it->first<<" -->";
+            for(auto ite = it->second.begin() ; ite!=it->second.end() ; ite++){
+                cout<<*ite<<" ";
+            }
+            cout<<"\n\n\n";
+        }
     }
 
     map<string, vector<string>> conjuntos_siguientes()
