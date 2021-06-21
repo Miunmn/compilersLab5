@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <FlexLexer.h>
 using namespace std;
 
 class Gramatica
@@ -393,12 +393,36 @@ public:
         }
     }
 
+    bool acepta(string cadena) {
+        vector<string> vector_;
+        SplitString(cadena," ",vector_);
+        for(int i = 0 ; i < vector_.size(); i++){
+            
+        }
+    }
+
+
+
+    };
+
+class Parser{
+    FlexLexer* lexer;
+    
+    public:
+    void parse(){
+        //Consultar tabla LL1
+        //Consultar teglas gramaticales
+        while(lexer->yylex() != 0);
+    }
+
+   Parser(){
+       lexer = new yyFlexLexer;
+   }
 };
 
 int main(){
-    Gramatica gramatica;
-    // gramatica.conjuntos_primeros_sinep();
-    //gramatica.conjuntos_primeros_conep();
-    gramatica.conjuntos_siguientes();
+    Parser p;
+    p.parse();
+
     return 0;
 }
