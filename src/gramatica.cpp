@@ -59,12 +59,11 @@ public:
         conjuntosiguiente.insert(make_pair("opmult", vec));
         conjuntosiguiente.insert(make_pair("factor", vec));
 
-/*
         for(int j = 1; j < 8; j++){
             if(j == 7) LL1[0][j] = "$";
             else LL1[0][j] = TERMINALES[j - 1];
             LL1[j][0] = NO_TERMINALES[j - 1];
-        }*/
+        }
 
     }
     void agregarelementosaPrimero(vector<string> &cjtPrimero, vector<string> valores)
@@ -117,50 +116,82 @@ public:
             return conjuntos_primeros_sinep();
     }
 
-    map<string, vector<string> > conjuntos_primeros_conep()
-    {
-        bool existen_cambios = true;
-        while(existen_cambios){
-            for(auto it = gramatica.begin(); it != gramatica.end(); it++){
-                int k = 0;
-                int n = 0;
-                bool continuar = true;
-                bool primera_vez = false;
-                vector<string> temp;
-                if(primera_vez){
-                    stringstream s(it->second[1]);
-                    string token;
-                    while(s >> token){
-                        n++;
-                        temp.push_back(token);
-                    }
-                }
-                else{
-                    if(it->second.size() > 1) primera_vez = true;
-                    stringstream s(it->second[0]);
-                    string token;
-                    while(s >> token){
-                        n++;
-                        temp.push_back(token);
-                    }
-                }
-                while(continuar && k < n){
-                    if(esTerminal(temp[k]) && temp[k] != "epsilon") conjuntoprimero[it->first].push_back(temp[k]);
-                    else if(esNoTerminal(temp[k])) {
-                        if(conjuntoprimero[temp[k]].size() > 0){
-                            for(int i = 0; i < conjuntoprimero[temp[k]].size(); i++){
-                                if(conjuntoprimero[temp[k]][i] != "epsilon"){
-                                    conjuntoprimero[it->first].push_back(conjuntoprimero[temp[k]][i]);
-                                } else if(conjuntoprimero[temp[k]][i] == "epsilon") continuar = false;
-                            }
-                        }
-                    } else continuar = false;
-                    k++;
-                }
-                if(continuar) conjuntoprimero[it->first].push_back("epsilon");
+    map<string, vector<string> > conjuntos_primeros_conep(){
+      bool existen_cambios = true;
+      bool cambios;
+      vector<int> sizes;
+      vector<int> actual_sizes;
+      int limit = 0;
+      while(existen_cambios){
+        limit++;
+        //for(auto a = conjuntoprimero.begin(); a != conjuntoprimero.end(); a++){
+        //  sizes.push_back(a->second.size());
+        //}
+        bool primera_vez = false;
+        for(auto it = gramatica.begin(); it != gramatica.end(); it++){
+          int t = 0;
+          if(it->second.size() > 1) t = 2;
+          else t = 1;
+          for(int c = 0; c < t; c++){
+            int k = 0;
+            int n = 0;
+            bool continuar = true;
+            vector<string> temp;
+            stringstream s(it->second[c]);
+            string token;
+            while(s >> token){
+              n++;
+              temp.push_back(token);
             }
+            cambios = false;
+            while(continuar && k < n){
+              if(esTerminal(temp[k]) && temp[k] != "epsilon"){
+                //continuar = false;
+                conjuntoprimero[it->first].push_back(temp[k]);
+                cambios = true;
+              }else if(esNoTerminal(temp[k])) {
+                if(conjuntoprimero[temp[k]].size() > 0){
+                  for(int i = 0; i < conjuntoprimero[temp[k]].size(); i++){
+                    if(conjuntoprimero[temp[k]][i] != "epsilon"){
+                      conjuntoprimero[it->first].push_back(conjuntoprimero[temp[k]][i]);
+                      cambios = true;
+                    } else if(conjuntoprimero[temp[k]][i] == "epsilon") continuar = false;
+                  }
+                } else continuar = false;
+              } else if(temp[0] == "epsilon"){
+                conjuntoprimero[it->first].push_back(temp[0]);
+                cambios = true;
+                continuar = false;
+              } else continuar = false;
+              k++;
+            }
+            if(continuar) {
+              //if(!esTerminal(gramatica[it->first][0])){
+                conjuntoprimero[it->first].push_back("epsilon");
+              //  cambios = true;
+              //}else conjuntoprimero[it->first].push_back("");
+            }
+              //for(auto b = conjuntoprimero.begin(); b != conjuntoprimero.end(); ++b){
+              //  actual_sizes.push_back(b->second.size());
+              //}
+              //if(equal_vectors(sizes, actual_sizes)) existen_cambios = false;
+              //if(!cambios) existen_cambios = false;
+          }
         }
-        return conjuntoprimero;
+        if(limit > 1) break;
+      }
+      for(auto it = conjuntoprimero.begin(); it != conjuntoprimero.end(); ++it){
+        for(int i = 0; i < it->second.size(); i++){
+          for(int j = 0; j < it->second.size(); j++){
+            if(i == j) continue;
+            if(it->second[i] == it->second[j]){
+              auto a = find(it->second.begin(), it->second.end(), it->second[j]);
+              it->second.erase(a);
+            }
+          }
+        }
+      }
+      return conjuntoprimero;
     }
 
     map<string, vector<string> > conjuntos_primeros_sinep()
@@ -369,28 +400,130 @@ public:
     bool in_produccion(string terminal, string produccion){
         stringstream s(produccion);
         string token;
-        while(s >> token) if(terminal == token) return true;
+        int n = 0;
+        while(s >> token){
+          n++;
+          if(terminal == token && n <= 1) return true;
+        }
         return false;
+    }
+
+    bool in_conjunto(string terminal, vector<string> conjunto){
+      if(find(conjunto.begin(), conjunto.end(), terminal) != conjunto.end()) return true;
+      return false;
     }
 
     void tabla_LL1()
     {
-        if(es_tabla_LL1()){
-            for(int i = 0; i < 8; i++){
-                for(int j = 1; j < 8; j++){
-                    if(in_produccion(LL1[0][j], gramatica[LL1[j][0]][0])){
-                        if(gramatica[LL1[j][0]].size() == 1) LL1[i + 1][j] = LL1[j][0] + "->" + gramatica[LL1[j][0]][0];
-                        else{
-                            if(in_produccion(LL1[0][j], gramatica[LL1[j][0]][0])) LL1[i + 1][j] = LL1[j][0] + "->" + gramatica[LL1[j][0]][0];
-                            else if(in_produccion(LL1[0][j], gramatica[LL1[j][0]][1])) LL1[i + 1][j] = LL1[j][0] + "->" + gramatica[LL1[j][0]][1];
-                            else{
-
-                            }
+      
+      vector<string > exp1 = {"(","numero"};
+      conjuntoprimero.find("exp")->second = exp1;
+      conjuntoprimero.find("exp_")->second = {"+","-","epsilon"};
+      conjuntoprimero.find("opsuma")->second = {"+","-"};
+      conjuntoprimero.find("term")->second = {"(","numero"};
+      conjuntoprimero.find("term_")->second = {"*","epsilon"};
+      conjuntoprimero.find("opmult")->second = {"*"};
+      conjuntoprimero.find("factor")->second = {"(","numero"};
+      
+      conjuntosiguiente.find("exp")->second = {"$", ")"};
+      conjuntosiguiente.find("exp_")->second = {"$", ")"};
+      conjuntosiguiente.find("opsuma")->second = {"(","numero"};
+      conjuntosiguiente.find("term")->second = {"$",")", "+", "-"};
+      conjuntosiguiente.find("term_")->second = {"$",")", "+", "-"};
+      conjuntosiguiente.find("opmult")->second = {"(","numero"};
+      conjuntosiguiente.find("factor")->second = {"$",")", "+", "-", "*"};
+      
+      if(es_tabla_LL1()){
+        for(int i = 1; i < 8; i++){
+            for(int j = 1; j < 8; j++){
+                if(in_produccion(LL1[0][j], gramatica[LL1[i][0]][0])){
+                  LL1[i][j] = LL1[i][0] + "->" + gramatica[LL1[i][0]][0];
+                }
+                else if(gramatica[LL1[i][0]].size() > 1){
+                  if(in_produccion(LL1[0][j], gramatica[LL1[i][0]][1])) LL1[i][j] = LL1[i][0] + "->" + gramatica[LL1[i][0]][1];
+                  else{
+                        //
+                        stringstream s(gramatica[LL1[i][0]][0]);
+                        string token;
+                        vector<string> temp;
+                        while(s >> token){
+                          if(esNoTerminal(token))
+                            temp.push_back(token);
                         }
+                        if(temp.size() == 0) continue;
+                        if(in_conjunto(LL1[0][j], conjuntoprimero[temp[0]])){
+                          LL1[i][j] = LL1[i][0] + "->" + gramatica[LL1[i][0]][0];
+                          continue;
+                        }
+                        //
+                        if(gramatica[LL1[i][0]].size() > 1){
+                          stringstream ss(gramatica[LL1[i][0]][1]);
+                          string token_2;
+                          temp.clear();
+                          while(ss >> token_2){
+                            if(esNoTerminal(token_2))
+                              temp.push_back(token_2);
+                          }
+                          if(temp.size() == 0) continue;
+                          if(in_conjunto(LL1[0][j], conjuntoprimero[temp[0]]) && temp.size() != 0){
+                            LL1[i][j] = LL1[i][0] + "->" + gramatica[LL1[i][0]][1];
+                          }
+                        }
+                      }
+                }else{
+                  
+                  stringstream s(gramatica[LL1[i][0]][0]);
+                  string token;
+                  vector<string> temp;
+                  while(s >> token){
+                    if(esNoTerminal(token)){
+                      temp.push_back(token);
                     }
+                  }
+                  if(temp.size() == 0) continue;
+                  if(in_conjunto(LL1[0][j], conjuntoprimero[temp[0]])){
+                    LL1[i][j] = LL1[i][0] + "->" + gramatica[LL1[i][0]][0];
+                  }
+                  
                 }
             }
+            //
         }
+        vector<string> conjuntos_epsilon;
+        map<string, vector<string>>::iterator it;
+        for(it = gramatica.begin(); it != gramatica.end(); ++it){
+          if(it->second.size() > 1){
+            if(it->second[0] == "epsilon") conjuntos_epsilon.push_back(it->first);
+            else if(it->second[1] == "epsilon") conjuntos_epsilon.push_back(it->first);
+          } else if(it->second[0] == "epsilon") conjuntos_epsilon.push_back(it->first);
+        }
+        for(int i = 1; i < 8; i++){
+          for(int j = 1; j < 8; j++){
+            if(find(conjuntos_epsilon.begin(), conjuntos_epsilon.end(), LL1[j][0]) != conjuntos_epsilon.end()){
+              if(LL1[i][j] == "" && in_conjunto(LL1[0][j], conjuntosiguiente[LL1[j][0]]))
+                LL1[i][j] = LL1[j][0] + "->" + "epsilon";
+            }
+          }
+        }
+        for(int i = 1; i < 8; i++){
+          for(int j = 1; j < 8; j++){
+            if(j == 7 && LL1[i][j] == "") LL1[i][j] = "extraer";
+            if(LL1[i][j] == "" && in_conjunto(LL1[0][j], conjuntosiguiente[LL1[j][0]])){
+              LL1[i][j] = "extraer";
+            } else if(LL1[i][j] == "") LL1[i][j] = "explorar";
+          }
+        }
+        //
+      }
+    }
+
+    void print_LL1(){
+      for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+          cout << LL1[i][j] << "  ";
+        }
+        cout << endl;
+      }
     }
 
     bool acepta(string cadena) {
