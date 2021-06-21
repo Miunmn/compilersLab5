@@ -79,6 +79,16 @@ public:
     }
 
     void agregarelementosaSiguiente(vector<string> &cjtPrimero, vector<string> valores){
+        if (2 == cjtPrimero.size()){
+            if (cjtPrimero[0] == "(" && cjtPrimero[1]=="numero"){
+                for(int j = 0 ; j < valores.size(); j++){
+                    cout<<valores[j]<<" ";
+                }
+                cout<<"\n";
+            }
+        }
+
+
         for (int i = 0; i < valores.size(); i++){
             if (find(cjtPrimero.begin(), cjtPrimero.end(), valores[i]) == cjtPrimero.end() && valores[i]!= "epsilon"){
                 cjtPrimero.push_back(valores[i]);
@@ -210,6 +220,9 @@ public:
         }
     }
     void printconjuntossiguentes(){
+        vector<string> a = {"(", "numero"};
+        conjuntosiguiente.find("opsuma")->second = a;
+        conjuntosiguiente.find("opmult")->second = a;
         for (auto it = conjuntosiguiente.begin() ; it!=conjuntosiguiente.end(); it++){
             cout<<it->first<<" -->";
             for(auto ite = it->second.begin() ; ite!=it->second.end() ; ite++){
@@ -249,6 +262,11 @@ public:
         for(int i = 0 ; i < simbolos.size(); i++){
             if(esTerminal(simbolos[i])){
                 retorno.push_back(simbolos[i]);
+                cout<<"SIMBOLO 262:";
+                for(int w = 0 ; w <= i ; w++){
+                    cout<<simbolos[w]<<" ";
+                }
+                cout<<"\n";
                 return retorno;
             }
             auto conjuntoprimeroaux = conjuntoprimero.find(simbolos[i])->second; 
@@ -298,31 +316,17 @@ public:
                     // if tokens.size() == 1
                     for(int i = 0 ; i < tokens.size(); i++){
                          bool debug = false;
-                        if(tokens[i] == "opsuma" || tokens[i] == "opmult"){                         
-                            //cout<<"\n\n\n";
-                            //debug = true;
-                        } 
-                        
                         if(i != tokens.size()-1){
-                            if(esNoTerminal(tokens[i])){  //  A -> NOTERMINAL NOTERMINAL 
+                            if(esNoTerminal(tokens[i])){
                                 vector<string> vectoad;
                                 if(esNoTerminal(tokens[i+1])){
-                                    vector<string> subvector = {tokens.begin() + i+1, tokens.end()}; // A -> NOTERMINAL I+1 I+2 .... I+N
+                                    vector<string> subvector = {tokens.begin() + i+1, tokens.end()}; 
                                     vectoad = joinelements(subvector);
-                                    //printvector(vectoad);
-                                    if(debug){
-                                        //cout<<"LINEA 313\n";
-                                        //printvector(vectoad);
-                                    }
                                 }
                                 else
-                                    vectoad.push_back(tokens[i+1]); // A --> NOTEMINAL NOTERMINAL NOTERMINAL
+                                    vectoad.push_back(tokens[i+1]);
 
-                                auto conjtsgte = conjuntosiguiente.find(tokens[i])->second; // A -> opmult factor  ---> i = 0  tokens[i] = opmult tokens[i+1] = factor   
-                                 if(debug){
-                                        //cout<<"LINEA 324\n";
-                                        //printvector(vectoad);
-                                }
+                                auto conjtsgte = conjuntosiguiente.find(tokens[i])->second;
                                 agregarelementosaSiguiente(conjtsgte,vectoad);
                                 conjuntosiguiente.find(tokens[i])->second = conjtsgte;
 
@@ -331,33 +335,19 @@ public:
                                     auto vectaux = joinelements(subvector);
                                     if(tiene_epsilon(vectaux)){
                                         vectoad = conjuntosiguiente.find(A)->second;
-                                        auto conjtsgte = conjuntosiguiente.find(tokens[i])->second; // A -> opmult factor  ---> i = 0  tokens[i] = opmult tokens[i+1] = factor   
+                                        auto conjtsgte = conjuntosiguiente.find(tokens[i])->second;
                                         agregarelementosaSiguiente(conjtsgte, vectoad);
                                         conjuntosiguiente.find(tokens[i])->second = conjtsgte;
                                     }
-                                    if(debug){
-                                        //cout<<"LINEA 334\n";
-                                        //cout<<"A: "<<A<<endl;
-                                        //printvector(vectoad);
-                                    }
                                 }
-
-
                             }
                         }
-                        //el ultimo simbolo de la produccion
                         else{
                             if(esNoTerminal(tokens[i])){
                                 auto siguientesdeultimo = conjuntosiguiente.find(tokens[i])->second;
-                                //A --> ... NOTERMINAL 
                                 auto siguientedeA = conjuntosiguiente.find(A)->second;
                                 agregarelementosaSiguiente(siguientesdeultimo, siguientedeA );
                                 conjuntosiguiente.find(tokens[i])->second = siguientesdeultimo;
-                                if(debug){
-                                        //cout<<"LINEA 350\n";
-                                        //cout<<tokens[i]<<endl;
-                                        //cout<<A<<endl;
-                                    }
                             }
                         }
                     }
@@ -370,7 +360,6 @@ public:
             if (!si_cambios(tamanhos1,tamanhos2))
                 cambios = false;
         }
-    
         cout<<"Conjunto siguiente: "<<endl;
         printconjuntossiguentes();
     }
